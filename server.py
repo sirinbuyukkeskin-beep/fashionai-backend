@@ -7,24 +7,25 @@ app = Flask(__name__)
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-@app.route("/")
+@app.route("/", methods=["GET"])
 def home():
-    return "Fashional Backend Çalışıyor!"
+    return jsonify({"message": "Server is running"})
 
-@app.route("/yukle", methods=["POST"])
-def yukle():
-    if "image" not in request.files:
-        return jsonify({"hata": "Dosya bulunamadı"}), 400
+@app.route("/upload", methods=["POST"])
+def upload_file():
+    if "file" not in request.files:
+        return jsonify({"error": "file param missing"}), 400
 
-    dosya = request.files["image"]
-    if dosya.filename == "":
-        return jsonify({"hata": "Dosya adı boş"}), 400
+    file = request.files["file"]
 
-    filename = secure_filename(dosya.filename)
-    save_path = os.path.join(UPLOAD_FOLDER, filename)
-    dosya.save(save_path)
+    if file.filename == "":
+        return jsonify({"error": "No file selected"}), 400
 
-    return jsonify({"mesaj": "Dosya alındı", "dosya": filename})
-    
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(filepath)
 
-app.run(host="0.0.0.0", port=10000)
+    return jsonify({"message": "File uploaded", "filename": filename}), 200
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
